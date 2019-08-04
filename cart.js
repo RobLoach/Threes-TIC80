@@ -13,7 +13,10 @@ const colors = {
 	one: 4,
 	two: 5,
 	white: 15,
-	black: 0
+	black: 0,
+	twoborder: 6,
+	oneborder: 14,
+	threeborder: 13
 }
 const wall = {
 	top: 0,
@@ -39,9 +42,13 @@ var highscore = 0
  * Starts a new game.
  */
 function newGame() {
+	// Clear the board state.
 	tiles = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+
+	// Choose a random next tile.
 	next = getRandomInt(3) + 1
 
+	// Fill the board with random tiles.
 	addRandomTile(1)
 	addRandomTile(1)
 	addRandomTile(1)
@@ -118,10 +125,15 @@ function addRandomTileAt(whichside) {
 	var tile = availableTiles[Math.floor(Math.random() * availableTiles.length)]
 	tiles[tile.yPos][tile.xPos] = next
 	next = getRandomInt(3) + 1
+
+	// Save all information to pmem()
+	saveGame()
 }
 
 /**
  * Load all game information from persistent memory.
+ *
+ * Values are augmented by one to avoid null values.
  */
 function loadGame() {
 	// Tiles
@@ -284,15 +296,19 @@ function drawBoard() {
 		for (var x = 0; x < 4; x++) {
 			var val = tiles[y][x]
 			var color = colors.white
+			var bordercolor = colors.threeborder
 			switch (val) {
 				case 0:
 					color = colors.zero
+					bordercolor = colors.zero
 					break
 				case 1:
 					color = colors.one
+					bordercolor = colors.oneborder
 					break
 				case 2:
 					color = colors.two
+					bordercolor = colors.twoborder
 					break
 			}
 			rect(leftPadding + x * width + x * margin, topPadding + y * height + y * margin, width, height, color)
@@ -301,18 +317,27 @@ function drawBoard() {
 				var numWidth = print(num, -10, -10)
 				var numLeft = leftPadding + x * width + x * margin + width / 2 - numWidth / 2
 				var numTop = topPadding + y * height + y * margin + height / 2 - 3
-				print(val.toString(), numLeft, numTop, 0, false, 1)
+				var textColor = colors.black
+				if (val == 1 || val == 2) {
+					textColor = colors.white
+				}
+				print(val.toString(), numLeft, numTop, textColor, false, 1)
+
+				// Border
+				var lineX = leftPadding + x * width + x * margin
+				var lineY = topPadding + y * height + y * margin + height - 1
+				line(lineX, lineY, lineX + width - 1, lineY, bordercolor)
 			}
 		}
 	}
 
 	// Score
 	var textHeight = 5
-	var highscoreText = highscore.toString()
 	var textWidth = getTextWidth("Score")
+	var score = getScore()
 	var leftColumnWidth = leftPadding - margin
 	print("Score", leftColumnWidth / 2 - textWidth / 2, margin * 2, colors.black)
-	var scoreText = getScore().toString()
+	var scoreText = score.toString()
 	textWidth = getTextWidth(scoreText, 2)
 	print(scoreText, leftColumnWidth / 2 - textWidth / 2, margin * 2 + 8, colors.black, false, 2)
 
@@ -322,31 +347,40 @@ function drawBoard() {
 	var outWidth = width / 2 + margin * 2
 	rect(leftColumnWidth / 2 - outWidth / 2, margin * 12 + 8, outWidth, height / 2 + margin * 2, colors.background)
 	var cardcolor = colors.black
+	var cardbordercolor = colors.threeborder
 	switch (next) {
 		case 0:
 			cardcolor = colors.zero
+			cardbordercolor = colors.zero
 			break
 		case 1:
 			cardcolor = colors.one
+			cardbordercolor = colors.oneborder
 			break
 		case 2:
 			cardcolor = colors.two
+			cardbordercolor = colors.twoborder
 			break
 		case 3:
 			cardcolor = colors.white
+			cardbordercolor = colors.threeborder
 			break
 	}
 	var inWidth = width / 2 + margin * 2 - 4
 	rect(leftColumnWidth / 2 - inWidth / 2, margin * 12 + 8 + 2, inWidth, height / 2 + margin * 2 - 4, cardcolor)
+	var nextlineX = leftColumnWidth / 2 - inWidth / 2
+	var nextlineY = margin * 12 + 8 + 2 + height / 2 + margin * 2 - 5
+	line(nextlineX, nextlineY, nextlineX + inWidth - 1, nextlineY, cardbordercolor)
 
 	// Best
 	textWidth = getTextWidth("Best")
 	print("Best", screenWidth - leftPadding / 2 - textWidth / 2, margin * 2, colors.black)
+	var highscoreText = highscore.toString()
 	textWidth = getTextWidth(highscoreText, 2)
 	print(highscoreText, screenWidth - leftPadding / 2 - textWidth / 2, margin * 2 + 8, colors.black, false, 2)
 
 	// Restart
-	spr(0, leftPadding + boardWidth + margin - 4, screenHeight - 16, 1)
+	spr(1, leftPadding + boardWidth + margin - 4, screenHeight - 16, 1)
 	print("Restart", leftPadding + boardWidth + margin + 6, screenHeight - 16, colors.black)
 
 	// Credits
@@ -390,28 +424,29 @@ function updateInput() {
 		moveLeft()
 	if (btnp(controls.right))
 		moveRight()
-	if (btnp(controls.a) || btnp(controls.b) || btnp(controls.x) || btnp(controls.y))
+
+	// Restart
+	if (btnp(controls.a) || btnp(controls.b) || btnp(controls.x) || btnp(controls.y)) {
 		newGame()
+		saveGame()
+	}
 }
 
 // Start a new game when the cart starts.
 newGame()
 
+// Load game state from pmem().
+loadGame()
+
 function TIC() {
 	// Clear the screen.
 	cls(colors.white)
-
-	// Load game state from pmem().
-	loadGame()
 
 	// Process user input.
 	updateInput()
 
 	// Update any score state.
 	updateScore()
-
-	// Save all information to pmem()
-	saveGame()
 
 	// Render the game state.
 	drawBoard()
