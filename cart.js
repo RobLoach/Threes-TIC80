@@ -37,6 +37,8 @@ const controls = {
 var tiles = []
 var next = 0
 var highscore = 0
+var shake = 0
+const shakeSize = 1
 
 /**
  * Starts a new game.
@@ -46,7 +48,7 @@ function newGame() {
 	tiles = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 
 	// Choose a random next tile.
-	next = getRandomInt(3) + 1
+	next = getRandomInt(1, 4)
 
 	// Fill the board with random tiles.
 	addRandomTile(1)
@@ -61,18 +63,20 @@ function newGame() {
 }
 
 /**
- * Get a random value depending on the given max value.
+ * Get a random number between the two given numbers.
  */
-function getRandomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
 }
 
 /**
  * Add the given value to a random available tile.
  */
 function addRandomTile(val) {
-	var x = getRandomInt(4)
-	var y = getRandomInt(4)
+	var x = getRandomInt(0, 4)
+	var y = getRandomInt(0, 4)
 
 	// Choose another tile if it's already taken.
 	if (tiles[y][x] != 0) {
@@ -124,10 +128,11 @@ function addRandomTileAt(whichside) {
 
 	var tile = availableTiles[Math.floor(Math.random() * availableTiles.length)]
 	tiles[tile.yPos][tile.xPos] = next
-	next = getRandomInt(3) + 1
+	next = getRandomInt(1, 4)
 
 	// Save all information to pmem()
 	saveGame()
+	sfx(0)
 }
 
 /**
@@ -210,8 +215,10 @@ function moveUp() {
         }
     }
     if (moved) {
-    	addRandomTileAt(wall.bottom)
+    	return addRandomTileAt(wall.bottom)
     }
+
+	failMove()
 }
 
 /**
@@ -227,8 +234,10 @@ function moveDown() {
         }
     }
     if (moved) {
-    	addRandomTileAt(wall.top)
+    	return addRandomTileAt(wall.top)
     }
+
+	failMove()
 }
 
 /**
@@ -244,8 +253,10 @@ function moveLeft() {
         }
     }
     if (moved) {
-    	addRandomTileAt(wall.right)
+    	return addRandomTileAt(wall.right)
     }
+
+	failMove()
 }
 
 /**
@@ -261,8 +272,15 @@ function moveRight() {
         }
     }
     if (moved) {
-    	addRandomTileAt(wall.left)
+    	return addRandomTileAt(wall.left)
     }
+
+	failMove()
+}
+
+function failMove() {
+	sfx(1)
+	shake = 10
 }
 
 /**
@@ -450,4 +468,14 @@ function TIC() {
 
 	// Render the game state.
 	drawBoard()
+
+	// Process the screen shake.
+	if (shake > 0) {
+		poke(0x3FF9, getRandomInt(-shakeSize, shakeSize + 1))
+		poke(0x3FF9 + 1, getRandomInt(-shakeSize, shakeSize + 1))
+		shake -= 1
+		if (shake == 0) {
+			memset(0x3FF9,0,2)
+		}
+	}
 }
