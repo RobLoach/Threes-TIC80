@@ -1,6 +1,6 @@
 // title: Threes
 // author: Rob Loach
-// description: Port of Threes to TIC-80.
+// desc: Port of Threes to TIC-80.
 // input: gamepad
 // saveid: threes
 // script: js
