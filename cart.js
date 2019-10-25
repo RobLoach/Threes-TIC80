@@ -1,7 +1,6 @@
 // title: Threes
 // author: Rob Loach
 // desc: Port of Threes to TIC-80.
-// input: gamepad
 // saveid: threes
 // script: js
 
@@ -33,6 +32,12 @@ const controls = {
 	b: 5,
 	x: 6,
 	y: 7
+}
+const mouseOld = {
+	x: 0,
+	y: 0,
+	left: false,
+	right: false
 }
 var tiles = []
 var next = 0
@@ -142,39 +147,39 @@ function addRandomTileAt(whichside) {
  */
 function loadGame() {
 	// Tiles
-    for (var y = 0; y < 4; y++) {
-        for (var x = 0; x < 4; x++) {
-        	var val = pmem(y * 4 + x)
-        	if (val > 0) {
-        		tiles[y][x] = val - 1
-        	}
-        }
-    }
+	for (var y = 0; y < 4; y++) {
+		for (var x = 0; x < 4; x++) {
+			var val = pmem(y * 4 + x)
+			if (val > 0) {
+				tiles[y][x] = val - 1
+			}
+		}
+	}
 
-    // Highscore
-    var highval = pmem(255)
-    if (highval > 0) {
-    	highscore = highval
-    }
+	// Highscore
+	var highval = pmem(255)
+	if (highval > 0) {
+		highscore = highval
+	}
 
-    // Next value
-    var nextval = pmem(254)
-    if (nextval > 0) {
-    	next = nextval - 1
-    }
+	// Next value
+	var nextval = pmem(254)
+	if (nextval > 0) {
+		next = nextval - 1
+	}
 }
 
 /**
  * Save all game information to persistent memory.
  */
 function saveGame() {
-    for (var y = 0; y < 4; y++) {
-        for (var x = 0; x < 4; x++) {
-        	pmem(y * 4 + x, tiles[y][x] + 1)
-        }
-    }
-    pmem(255, highscore)
-    pmem(254, next + 1)
+	for (var y = 0; y < 4; y++) {
+		for (var x = 0; x < 4; x++) {
+			pmem(y * 4 + x, tiles[y][x] + 1)
+		}
+	}
+	pmem(255, highscore)
+	pmem(254, next + 1)
 }
 
 /**
@@ -207,16 +212,16 @@ function swap(currentX, currentY, nextX, nextY) {
  */
 function moveUp() {
 	var moved = false
-    for (var y = 0; y < 3; y++) {
-        for (var x = 0; x < 4; x++) {
-            if (swap(x, y, x, y + 1)) {
-            	moved = true
-            }
-        }
-    }
-    if (moved) {
-    	return addRandomTileAt(wall.bottom)
-    }
+	for (var y = 0; y < 3; y++) {
+		for (var x = 0; x < 4; x++) {
+			if (swap(x, y, x, y + 1)) {
+				moved = true
+			}
+		}
+	}
+	if (moved) {
+		return addRandomTileAt(wall.bottom)
+	}
 
 	failMove()
 }
@@ -226,16 +231,16 @@ function moveUp() {
  */
 function moveDown() {
 	var moved = false
-    for (var y = 3; y > 0; y--) {
-        for (var x = 0; x < 4; x++) {
-            if (swap(x, y, x, y - 1)) {
-            	moved = true
-            }
-        }
-    }
-    if (moved) {
-    	return addRandomTileAt(wall.top)
-    }
+	for (var y = 3; y > 0; y--) {
+		for (var x = 0; x < 4; x++) {
+			if (swap(x, y, x, y - 1)) {
+				moved = true
+			}
+		}
+	}
+	if (moved) {
+		return addRandomTileAt(wall.top)
+	}
 
 	failMove()
 }
@@ -245,16 +250,16 @@ function moveDown() {
  */
 function moveLeft() {
 	var moved = false
-    for (var y = 0; y < 4; y++) {
-        for (var x = 0; x < 3; x++) {
-            if (swap(x, y, x + 1, y)) {
-            	moved = true
-            }
-        }
-    }
-    if (moved) {
-    	return addRandomTileAt(wall.right)
-    }
+	for (var y = 0; y < 4; y++) {
+		for (var x = 0; x < 3; x++) {
+			if (swap(x, y, x + 1, y)) {
+				moved = true
+			}
+		}
+	}
+	if (moved) {
+		return addRandomTileAt(wall.right)
+	}
 
 	failMove()
 }
@@ -264,16 +269,16 @@ function moveLeft() {
  */
 function moveRight() {
 	var moved = false
-    for (var y = 0; y < 4; y++) {
-        for(var x = 3; x > 0; x--) {
-            if (swap(x, y, x - 1, y)) {
-            	moved = true
-            }
-        }
-    }
-    if (moved) {
-    	return addRandomTileAt(wall.left)
-    }
+	for (var y = 0; y < 4; y++) {
+		for(var x = 3; x > 0; x--) {
+			if (swap(x, y, x - 1, y)) {
+				moved = true
+			}
+		}
+	}
+	if (moved) {
+		return addRandomTileAt(wall.left)
+	}
 
 	failMove()
 }
@@ -412,12 +417,12 @@ function drawBoard() {
  */
 function getScore() {
 	var score = 0
-    for (var y = 0; y < 4; y++) {
-        for(var x = 0; x < 4; x++) {
-        	score += Math.pow(3, Math.log2(tiles[y][x] / 3) + 1)
-        }
-    }
-    return Math.floor(score)
+	for (var y = 0; y < 4; y++) {
+		for(var x = 0; x < 4; x++) {
+			score += Math.pow(3, Math.log2(tiles[y][x] / 3) + 1)
+		}
+	}
+	return Math.floor(score)
 }
 
 /**
@@ -430,10 +435,77 @@ function updateScore() {
 	}
 }
 
+function getMouseState() {
+	var mouseCurrent = mouse()
+	return {
+		x: mouseCurrent[0],
+		y: mouseCurrent[1],
+		left: mouseCurrent[2],
+		middle: mouseCurrent[3],
+		right: mouseCurrent[4]
+	}
+}
+
 /**
  * Process the user input.
  */
 function updateInput() {
+	// Mouse Swiping
+	var mouseCurrent = getMouseState()
+
+	// Dragging
+	if (mouseOld.left) {
+		if (!mouseCurrent.left) {
+			// Let go, activate go!
+			var xDiff = mouseOld.x - mouseCurrent.x;
+			var yDiff = mouseOld.y - mouseCurrent.y;
+
+			if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {
+				if ( xDiff > 0 ) {
+					moveLeft()
+				} else {
+					moveRight()
+				}
+			} else {
+				if ( yDiff > 0 ) {
+					moveUp()
+				} else {
+					moveDown()
+				}
+			}
+
+			// Reset
+			mouseOld.x = 0;
+			mouseOld.y = 0;
+			mouseOld.left = false
+		}
+	}
+	else {
+		if (mouseCurrent.left) {
+			mouseOld.left = true
+			mouseOld.x = mouseCurrent.x
+			mouseOld.y = mouseCurrent.y
+		}
+	}
+
+	// Mouse Reset
+	if (mouseCurrent.right) {
+		// Pressed reset button, active state.
+		if (!mouseOld.right) {
+			mouseOld.right = true
+		}
+	}
+	else {
+		// Let go of reset button.
+		if (mouseOld.right) {
+			newGame()
+			saveGame()
+			sfx(1)
+			mouseOld.right = false
+		}
+	}
+
+	// Gamepad
 	if (btnp(controls.up))
 		moveUp()
 	if (btnp(controls.down))
@@ -447,6 +519,7 @@ function updateInput() {
 	if (btnp(controls.a) || btnp(controls.b) || btnp(controls.x) || btnp(controls.y)) {
 		newGame()
 		saveGame()
+		sfx(1)
 	}
 }
 
