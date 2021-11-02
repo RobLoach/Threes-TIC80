@@ -8,7 +8,7 @@
 
 ## Usage
 
-[Play online](https://tic.computer/play?cart=911), or [download and install TIC-80](https://tic.computer/create), loading *cart.tic*.
+[Play online](https://tic80.com/play?cart=911), or [download and install TIC-80](https://tic.computer/create), loading *cart.tic*.
 
 ### Gamepad
 
